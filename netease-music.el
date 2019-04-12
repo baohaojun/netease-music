@@ -517,7 +517,7 @@ Argument: INDEX, the song's order."
 (defun get-lyric (song-id)
   "Return lyric of current song by SONG-ID."
   (let* ((json (request lyric-url
-                        (format-args netease-music-lyric-args (song-id))))
+                        (format-args lyric-args (song-id))))
          (lrc (cdr (assoc 'lrc json)))
          (lyric (cdr (assoc 'lyric lrc))))
     lyric))
@@ -683,7 +683,7 @@ Argument LST: play this song from LST."
          (album-id (find-song-album-id song-id lst))
          (album (find-song-album song-id lst))
          (song-real-url (get-song-real-url id))
-         (lyric (get-lyric id)))
+         (lyric nil))
     (get-buffer-create "netease-music-playing")
     (setq current-playing-song (make-instance 'song))
     (format-current-playing-song song-name artist album id artist-id)
@@ -693,6 +693,8 @@ Argument LST: play this song from LST."
           (kill-process))
       (progn
         (setq song-real-url (download-and-rewrite-url album artist song-name song-id song-real-url))
+
+
         (play-song song-real-url)
         (setq global-mode-string song-name)
         (with-current-buffer "netease-music-playing"
@@ -700,8 +702,12 @@ Argument LST: play this song from LST."
           (mode)
           (insert (format-netease-title (format "[[https://music.163.com/#/song?id=%d][%s]]" song-id song-name)
                                         (format "Artist: [[https://music.163.com/#/artist?id=%d][%s]]  Album: [[https://music.163.com/#/album?id=%d][%s]]" artist-id artist album-id album)))
-          (if lyric lyric (setq lyric "纯音乐"))
-          (insert lyric)
+          (let ((lrc-file (replace-regexp-in-string "\\.mp3$" ".lrc" song-real-url)))
+            (if (file-exists-p lrc-file)
+                (progn
+                  (insert-file lrc-file)
+                  (setq default-directory (file-name-directory lrc-file)))
+              (insert (or (get-lyric song-id) "没有歌詞（純音楽？）"))))
           (goto-char (point-min)))))))
 
 (defun move-to-current-song ()
