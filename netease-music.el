@@ -655,7 +655,8 @@ Argument LST: play this song from LST."
   (let* ((line-content (get-current-line-content))
          (song-id (get-music-id-from-content line-content)))
     (message song-id)
-    (play-song-by-id (string-to-number song-id) lst)))
+    (play-song-by-id (string-to-number song-id) lst)
+    (switch-to-buffer "netease-music-playing")))
 
 (defun download-and-rewrite-url (album artist song-name song-id download-url)
   "Download the song for SONG-ID, save in ~/Music/ALBUM/ARTIST/SONG-NAME.mp3, from DOWNLOAD-URL."
