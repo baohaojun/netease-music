@@ -696,7 +696,6 @@ Argument LST: play this song from LST."
 
 
         (play-song song-real-url)
-        (setq global-mode-string song-name)
         (with-current-buffer "netease-music-playing"
           (erase-buffer)
           (mode)
@@ -777,6 +776,15 @@ Argument LST: play this song from LST."
            (message "jump into song")
            (jump-into-song-buffer songs-list)
            (move-to-current-song))
+          ((equal current-buffer-name "netease-music-playing")
+           (save-excursion
+             (search-backward-regexp "\\[")
+             (let ((lrc-timestamp-regexp "\\[\\([0-9]\\{2\\}\\):\\([0-9]\\{2\\}\\)\\.[0-9]\\{1,3\\}"))
+               (unless (looking-at lrc-timestamp-regexp)
+                 (search-backward-regexp lrc-timestamp-regexp nil t))
+               (search-forward-regexp lrc-timestamp-regexp)
+               (let ((sec (+  (* 60 (string-to-number (match-string 1))) (string-to-number (match-string 2)))))
+                 (seek-to sec)))))
           ((equal current-buffer-name "netease-music-mv")
            (message "play mv.")
            (play-mv))
@@ -832,8 +840,25 @@ Argument LST: play this song from LST."
     (message next-song-name)
     (if can-play
         (play-song-by-id next-song-id netease-music-songs-list))
-    (setq global-mode-string next-song-name)
     (move-to-current-song)))
+
+(defun seek-back (sec)
+  "Seek SEC seconds backward."
+  (process-send-string
+   process
+   (format "seek -%d\n" sec)))
+
+(defun seek-forward (sec)
+  "Seek SEC seconds forward."
+  (process-send-string
+   process
+   (format "seek %d\n" sec)))
+
+(defun seek-to (sec)
+  "Seek to SEC from the beginning."
+  (process-send-string
+   process
+   (format "seek %d 2\n" sec)))
 
 (defun add-to-songslist (song-ins)
   "Add SONG-INS to songs-list."
