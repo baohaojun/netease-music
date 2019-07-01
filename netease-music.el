@@ -777,7 +777,8 @@ Argument LST: play this song from LST."
            (message "jump into song")
            (jump-into-song-buffer songs-list)
            (move-to-current-song))
-          ((equal current-buffer-name "netease-music-playing")
+          ((or (equal current-buffer-name "netease-music-playing")
+               (string-match "\\.lrc$" current-buffer-name))
            (save-excursion
              (search-backward-regexp "\\[")
              (let ((lrc-timestamp-regexp "\\[\\([0-9]\\{2\\}\\):\\([0-9]\\{2\\}\\)\\.[0-9]\\{1,3\\}"))
