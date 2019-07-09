@@ -917,6 +917,10 @@ Argument LST: play this song from LST."
                          (if (string-match player "mplayer")
                              "-slave"
                            "")
+                         "-loop"
+                         (if play-loop-flag
+                             "0"
+                           "1")
                          song-real-url))
     (set-process-sentinel process 'netease-music-proc-sentinel)
     (setq status "playing")))
