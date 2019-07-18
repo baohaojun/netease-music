@@ -779,8 +779,8 @@ Argument LST: play this song from LST."
            (move-to-current-song))
           ((or (equal current-buffer-name "netease-music-playing")
                (string-match "\\.lrc$" current-buffer-name))
-           (toggle)
-           (when (string= status "playing")
+
+           (when (string= status "paused")
              (save-excursion
                (search-backward-regexp "\\[")
                (let ((lrc-timestamp-regexp "\\[\\([0-9]\\{2\\}\\):\\([0-9]\\{2\\}\\)\\.[0-9]\\{1,3\\}"))
@@ -788,7 +788,8 @@ Argument LST: play this song from LST."
                    (search-backward-regexp lrc-timestamp-regexp nil t))
                  (search-forward-regexp lrc-timestamp-regexp)
                  (let ((sec (+  (* 60 (string-to-number (match-string 1))) (string-to-number (match-string 2)))))
-                   (seek-to sec))))))
+                   (seek-to sec)))))
+           (toggle))
           ((equal current-buffer-name "netease-music-mv")
            (message "play mv.")
            (play-mv))
