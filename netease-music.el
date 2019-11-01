@@ -820,31 +820,34 @@ Argument LST: play this song from LST."
   (when (not jump-n)
     (if play-loop-flag
         (setq jump-n 0)
-      (setq jump-n 1)))
+      (setq jump-n (random 1000))))
   (let* ((current-playing-song-name (slot-value current-playing-song 'name))
          (current-playing-song-id (slot-value current-playing-song 'song-id))
          (next-song-name current-playing-song-name)
          (can-play nil)
          (count (length songs-list))
          (position 0))
+    (when (< jump-n 0)
+      (setq jump-n (+ jump-n (* count (1+ (/ jump-n count))))))
     (dotimes (index count next-song-name)
       (let* ((block (nth index songs-list))
              (song-ins (cdr block))
              (song-id (slot-value song-ins 'song-id))
              (song-name (slot-value song-ins 'name)))
         (if (and (equal song-id current-playing-song-id)
-                 (< index (- count 1)))
+                 (< index count))
             (progn
               (setq can-play 1)
-              (setq position index)))
-        (setq next-song-id
-              (slot-value (cdr (nth (+ position jump-n) songs-list))
-                          'song-id))))
+              (setq position index)))))
+    (setq next-song-id
+          (slot-value (cdr (nth (% (+ position jump-n) count) songs-list))
+                      'song-id))
     (setq next-song-name
-          (slot-value (cdr (nth (+ position 1) songs-list)) 'name))
+          (slot-value (cdr (nth (% (+ position jump-n) count) songs-list)) 'name))
     (message next-song-name)
     (if can-play
-        (play-song-by-id next-song-id netease-music-songs-list))
+        (play-song-by-id next-song-id netease-music-songs-list)
+      (message "Can't play!"))
     (move-to-current-song)))
 
 (defun seek-back (sec)
